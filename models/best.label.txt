@@ -1,0 +1,10 @@
+platenumber
+person
+bicycle
+car
+motorcycle
+bus
+train
+truck
+stop sign
+traffic light
