@@ -15,7 +15,7 @@ type RunOptions struct {
 }
 
 func Open() (*Engine, error) {
-	if baseApi == nil || core == nil {
+	if baseApi == nil {
 		return nil, ErrNotInitialized
 	}
 
@@ -36,9 +36,7 @@ func (api *Engine) CreateEnv(level OrtLoggingLevel, logid string) (*Env, error) 
 }
 
 func (api *Engine) CreateSessionOptions() (*SessionOptions, error) {
-	var sessionOptions = SessionOptions{
-		engine: api,
-	}
+	var sessionOptions = SessionOptions{}
 	status := core.CreateSessionOptions(api.cptr, &sessionOptions.cptr)
 	if status != nil {
 		return nil, CodeErr(OrtErrorCode(core.GetStatus(api.cptr, status)))
@@ -47,9 +45,7 @@ func (api *Engine) CreateSessionOptions() (*SessionOptions, error) {
 }
 
 func (api *Engine) CreateSession(env *Env, modelPath string, optios *SessionOptions) (*Session, error) {
-	var session = Session{
-		engine: api,
-	}
+	var session = Session{}
 
 	status := core.CreateSession(api.cptr, env.cptr, modelPath, optios.cptr, &session.cptr)
 	if status != nil {
@@ -97,9 +93,7 @@ func (api *Engine) CreateAllocator(session *Session, memInfo *MemoryInfo) (*Allo
 }
 
 func (api *Engine) CreateTensorAsOrtValue(allocator *Allocator, shape []int64, dataType ONNXTensorElementDataType) (*Value, error) {
-	var value = Value{
-		engine: api,
-	}
+	var value = Value{}
 	status := core.CreateTensorAsOrtValue(
 		api.cptr,
 		allocator.cptr,
@@ -116,9 +110,7 @@ func (api *Engine) CreateTensorAsOrtValue(allocator *Allocator, shape []int64, d
 
 func (api *Engine) CreateTensorWithDataAsOrtValue(memInfo *MemoryInfo, p unsafe.Pointer, size int, shape []int64, dataType ONNXTensorElementDataType) (*Value, error) {
 	var (
-		value = Value{
-			engine: api,
-		}
+		value = Value{}
 	)
 
 	status := core.CreateTensorWithDataAsOrtValue(
@@ -176,6 +168,14 @@ func (api *Engine) Run(sess *Session, options *RunOptions, inputNames []string, 
 		_inputs = append(_inputs, input.cptr)
 	}
 
+	if len(_inputs_names) == 0 {
+		return nil, ErrDontHaveInputs
+	}
+
+	if len(_outputs_names) == 0 {
+		return nil, ErrDontHaveOutputs
+	}
+
 	// for _, output := range outputs {
 	// 	_outputs = append(_outputs, output.cptr)
 	// }
@@ -198,9 +198,57 @@ func (api *Engine) Run(sess *Session, options *RunOptions, inputNames []string, 
 	p := (uintptr)(unsafe.Pointer(_outputs))
 
 	for i := 0; i < len(outputNames); i++ {
-		outputs = append(outputs, &Value{engine: api, cptr: (*binding.OrtValue)(unsafe.Pointer(p))})
+		outputs = append(outputs, &Value{cptr: (*binding.OrtValue)(unsafe.Pointer(p))})
 		p += unsafe.Sizeof(_outputs)
 	}
 
 	return
+}
+
+func CreateEnv(level OrtLoggingLevel, logid string) (*Env, error) {
+	return DefaultEngine.CreateEnv(level, logid)
+}
+
+func CreateSessionOptions() (*SessionOptions, error) {
+	return DefaultEngine.CreateSessionOptions()
+}
+
+func CreateSession(env *Env, modelPath string, optios *SessionOptions) (*Session, error) {
+	return DefaultEngine.CreateSession(env, modelPath, optios)
+}
+
+func CreateValue(val *Value, size int, typ ONNXType) (*Value, error) {
+	return DefaultEngine.CreateValue(val, size, typ)
+}
+
+func CreateMemoryInfo(name string, typ OrtAllocatorType, id int, memType OrtMemType) (*MemoryInfo, error) {
+	return DefaultEngine.CreateMemoryInfo(name, typ, id, memType)
+}
+
+func CreateCpuMemoryInfo(typ OrtAllocatorType, memType OrtMemType) (*MemoryInfo, error) {
+	return DefaultEngine.CreateCpuMemoryInfo(typ, memType)
+}
+
+func CreateAllocator(session *Session, memInfo *MemoryInfo) (*Allocator, error) {
+	return DefaultEngine.CreateAllocator(session, memInfo)
+}
+
+func CreateTensorAsOrtValue(allocator *Allocator, shape []int64, dataType ONNXTensorElementDataType) (*Value, error) {
+	return DefaultEngine.CreateTensorAsOrtValue(allocator, shape, dataType)
+}
+
+func CreateTensorWithDataAsOrtValue(memInfo *MemoryInfo, p unsafe.Pointer, size int, shape []int64, dataType ONNXTensorElementDataType) (*Value, error) {
+	return DefaultEngine.CreateTensorWithDataAsOrtValue(memInfo, p, size, shape, dataType)
+}
+
+func Alloc() (*Allocator, error) {
+	return DefaultEngine.Allocator()
+}
+
+func CreateRunOptions() (*RunOptions, error) {
+	return DefaultEngine.CreateRunOptions()
+}
+
+func Run(sess *Session, options *RunOptions, inputNames []string, inputs []*Value, outputNames []string) (outputs []*Value, err error) {
+	return DefaultEngine.Run(sess, options, inputNames, inputs, outputNames)
 }

@@ -133,7 +133,7 @@ func TestSession_InputsTypesTensorInfo(t *testing.T) {
 
 	for i, inputType := range session.InputsTypes() {
 		t.Logf("type %d ------------", i)
-		tensor, err := inputType.TensorInfo()
+		tensor, err := inputType.TensorShapeInfo()
 		assert.NoError(t, err)
 		tensorDataType, err := tensor.ElementType()
 		assert.NoError(t, err)
@@ -159,7 +159,7 @@ func TestSession_OutputsTypesTensorInfo(t *testing.T) {
 	assert.NotNil(t, session)
 
 	for _, inputType := range session.OutputsTypes() {
-		tensor, err := inputType.TensorInfo()
+		tensor, err := inputType.TensorShapeInfo()
 		assert.NoError(t, err)
 		tensorDataType, err := tensor.ElementType()
 		assert.NoError(t, err)
@@ -252,7 +252,7 @@ func TestSession_RunTextRec(t *testing.T) {
 	t.Logf("outputs names % #v", session.OutputNames())
 
 	for _, inputType := range session.OutputsTypes() {
-		tensor, err := inputType.TensorInfo()
+		tensor, err := inputType.TensorShapeInfo()
 		assert.NoError(t, err)
 		tensorDataType, err := tensor.ElementType()
 		assert.NoError(t, err)
@@ -308,7 +308,7 @@ func TestSession_RunTextRec(t *testing.T) {
 		t.Fatalf("get output type error %s", err)
 	}
 
-	tensor, err := outType.TensorInfo()
+	tensor, err := outType.TensorShapeInfo()
 	if err != nil {
 		t.Fatalf("tensor info error %s", err)
 	}

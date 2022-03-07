@@ -3,7 +3,9 @@ package onnxruntime
 import "errors"
 
 var (
-	ErrNotInitialized = errors.New("onnxruntime: not initialized")
+	ErrNotInitialized  = errors.New("onnxruntime: not initialized")
+	ErrDontHaveInputs  = errors.New("onnxruntime: dont have input names")
+	ErrDontHaveOutputs = errors.New("onnxruntime: dont have outputs names")
 )
 
 func CodeErr(code OrtErrorCode) error {

@@ -29,6 +29,8 @@ type (
 	OrtAllocator               C.OrtAllocator
 	ONNXTensorElementDataType  C.ONNXTensorElementDataType
 	OrtTensorTypeAndShapeInfo  C.OrtTensorTypeAndShapeInfo
+	OrtSequenceTypeInfo        C.OrtSequenceTypeInfo
+	OrtMapTypeInfo             C.OrtMapTypeInfo
 	OrtRunOptions              C.OrtRunOptions
 	OrtCUDAProviderOptions     C.OrtCUDAProviderOptions
 	OrtROCMProviderOptions     C.OrtROCMProviderOptions
@@ -105,6 +107,37 @@ func (core *Core) CreateSession(api *OrtApi, oe *OrtEnv, modelPath string, os *O
 	}
 
 	return (*OrtStatus)(C.ortCreateSession((*C.OrtApi)(api), (*C.OrtEnv)(oe), cpath, (*C.OrtSessionOptions)(os), (**C.OrtSession)(&out1)))
+}
+
+func (core *Core) CreateSessionFromArray(api *OrtApi, oe *OrtEnv, model_data []byte, os *OrtSessionOptions, out **OrtSession) *OrtStatus {
+	var out1 *C.OrtSession
+	defer func() {
+		*out = (*OrtSession)(out1)
+	}()
+
+	return (*OrtStatus)(C.ortCreateSessionFromArray(
+		(*C.OrtApi)(api),
+		(*C.OrtEnv)(oe),
+		(unsafe.Pointer(&model_data[0])),
+		(C.size_t)(len(model_data)),
+		(*C.OrtSessionOptions)(os),
+		(**C.OrtSession)(&out1)),
+	)
+}
+
+func (core *Core) EnableProfiling(api *OrtApi, sess *OrtSessionOptions, prefix string) *OrtStatus {
+	return (*OrtStatus)(C.ortEnableProfiling((*C.OrtApi)(api), (*C.OrtSessionOptions)(sess), C.CString(prefix)))
+}
+
+func (core *Core) DisableProfilng(api *OrtApi, sess *OrtSessionOptions) *OrtStatus {
+	return (*OrtStatus)(C.ortDisableProfiling((*C.OrtApi)(api), (*C.OrtSessionOptions)(sess)))
+}
+
+func (core *Core) SessionEndProfiling(api *OrtApi, sess *OrtSession, allocator *OrtAllocator) (string, *OrtStatus) {
+	var out *C.char
+
+	status := (*OrtStatus)(C.ortSessionEndProfiling((*C.OrtApi)(api), (*C.OrtSession)(sess), (*C.OrtAllocator)(allocator), &out))
+	return C.GoString(out), status
 }
 
 // func (core *Core) SessionOptionsAppendExecutionProvider_CUDA(api *OrtApi, os *OrtSessionOptions, provider *OrtCUDAProviderOptions, device_id int) *OrtStatus {
@@ -238,6 +271,24 @@ func (core *Core) CastTypeInfoToTensorInfo(api *OrtApi, typeInfo *OrtTypeInfo, o
 		*out = (*OrtTensorTypeAndShapeInfo)(out1)
 	}()
 	return (*OrtStatus)(C.ortCastTypeInfoToTensorInfo((*C.OrtApi)(api), (*C.OrtTypeInfo)(typeInfo), (**C.OrtTensorTypeAndShapeInfo)(&out1)))
+}
+
+func (core *Core) CastTypeInfoToSequenceTypeInfo(api *OrtApi, typeInfo *OrtTypeInfo, out **OrtSequenceTypeInfo) *OrtStatus {
+	var out1 *C.OrtSequenceTypeInfo
+	defer func() {
+		*out = (*OrtSequenceTypeInfo)(out1)
+	}()
+
+	return (*OrtStatus)(C.ortCastTypeInfoToSequenceTypeInfo((*C.OrtApi)(api), (*C.OrtTypeInfo)(typeInfo), (**C.OrtSequenceTypeInfo)(&out1)))
+}
+
+func (core *Core) CastTypeInfoToMapTypeInfo(api *OrtApi, typeInfo *OrtTypeInfo, out **OrtMapTypeInfo) *OrtStatus {
+	var out1 *C.OrtMapTypeInfo
+	defer func() {
+		*out = (*OrtMapTypeInfo)(out1)
+	}()
+
+	return (*OrtStatus)(C.ortCastTypeInfoToMapTypeInfo((*C.OrtApi)(api), (*C.OrtTypeInfo)(typeInfo), (**C.OrtMapTypeInfo)(&out1)))
 }
 
 func (core *Core) GetTensorMutableData(api *OrtApi, value *OrtValue, out *unsafe.Pointer) *OrtStatus {

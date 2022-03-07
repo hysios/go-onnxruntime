@@ -1,5 +1,7 @@
 package onnxruntime
 
+//go:generate stringer -type=ONNXType
+
 type (
 	OrtErrorCode              int
 	OrtLoggingLevel           int

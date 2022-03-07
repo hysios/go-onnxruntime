@@ -127,7 +127,7 @@ func main() {
 		log.Fatalf("get output type error %s", err)
 	}
 
-	tensor, err := outType.TensorInfo()
+	tensor, err := outType.TensorShapeInfo()
 	if err != nil {
 		log.Fatalf("tensor info error %s", err)
 	}

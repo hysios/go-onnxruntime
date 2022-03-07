@@ -5,19 +5,22 @@ import (
 )
 
 var (
-	baseApi *binding.OrtApiBase
-	_api    *API
-	core    *binding.Core
+	baseApi       *binding.OrtApiBase
+	_api          *API
+	core          = binding.CC
+	DefaultEngine = &Engine{
+		cptr: core.GetApi(baseApi),
+	}
 )
 
 type API struct {
 	cptr *binding.OrtApi
 }
 
-func Init() {
-
-	core = binding.CC
+func Init() (err error) {
 	baseApi = core.GetApiBase()
+	DefaultEngine, err = Open()
+	return
 }
 
 func Version() string {

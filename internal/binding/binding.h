@@ -30,6 +30,11 @@ OrtStatus *ortCreateEnv(OrtApi *api, OrtLoggingLevel log_severity_level, const c
     return api->CreateEnv(log_severity_level, logid, out);
 }
 
+OrtStatus *ortCreateEnvWithCustomLogger(OrtApi *api, OrtLoggingFunction logging_function, void *logger_param, OrtLoggingLevel log_severity_level, const char *logid, OrtEnv **out)
+{
+    return api->CreateEnvWithCustomLogger(logging_function, logger_param, log_severity_level, logid, out);
+}
+
 OrtStatus *ortCreateSessionOptions(OrtApi *api, OrtSessionOptions **out)
 {
     return api->CreateSessionOptions(out);
@@ -40,10 +45,75 @@ OrtStatus *ortCreateSession(OrtApi *api, OrtEnv *env, char *model_path, OrtSessi
     return api->CreateSession(env, model_path, options, out);
 }
 
-// OrtStatus *ortSessionOptionsAppendExecutionProvider_CUDAOLD(OrtApi *api, OrtSessionOptions *options, int device_id)
-// {
-//     return OrtSessionOptionsAppendExecutionProvider_CUDA(options, device_id);
-// }
+OrtStatus *ortCreateSessionFromArray(OrtApi *api, OrtEnv *env, const void *model_data, size_t model_data_len, const OrtSessionOptions *options, OrtSession **out)
+{
+    return api->CreateSessionFromArray(env, model_data, model_data_len, options, out);
+}
+
+OrtStatus *ortEnableProfiling(OrtApi *api, OrtSessionOptions *options, const char *file_prefix)
+{
+    return api->EnableProfiling(options, file_prefix);
+}
+
+OrtStatus *ortDisableProfiling(OrtApi *api, OrtSessionOptions *options)
+{
+    return api->DisableProfiling(options);
+}
+
+OrtStatus *ortSessionEndProfiling(OrtApi *api, OrtSession *session, OrtAllocator *allocator, char **out)
+{
+    return api->SessionEndProfiling(session, allocator, out);
+}
+
+OrtStatus *ortSessionGetModelMetadata(OrtApi *api, OrtSession *session, OrtModelMetadata **out)
+{
+    return api->SessionGetModelMetadata(session, out);
+}
+
+OrtStatus *ortModelMetadataGetProducerName(OrtApi *api, OrtModelMetadata *model_metadata, OrtAllocator *allocator, char **value)
+{
+    return api->ModelMetadataGetProducerName(model_metadata, allocator, value);
+}
+
+OrtStatus *ortModelMetadataGetGraphName(OrtApi *api, OrtModelMetadata *model_metadata, OrtAllocator *allocator, char **value)
+{
+    return api->ModelMetadataGetGraphName(model_metadata, allocator, value);
+}
+
+OrtStatus *ortModelMetadataGetDomain(OrtApi *api, OrtModelMetadata *model_metadata, OrtAllocator *allocator, char **value)
+{
+    return api->ModelMetadataGetDomain(model_metadata, allocator, value);
+}
+
+OrtStatus *ortModelMetadataGetDescription(OrtApi *api, OrtModelMetadata *model_metadata, OrtAllocator *allocator, char **value)
+{
+    return api->ModelMetadataGetDescription(model_metadata, allocator, value);
+}
+
+OrtStatus *ortModelMetadataLookupCustomMetadataMap(OrtApi *api, OrtModelMetadata *model_metadata, OrtAllocator *allocator, char *key, char **value)
+{
+    return api->ModelMetadataLookupCustomMetadataMap(model_metadata, allocator, key, value);
+}
+
+OrtStatus *ortModelMetadataGetVersion(OrtApi *api, OrtModelMetadata *model_metadata, int64_t *value)
+{
+    return api->ModelMetadataGetVersion(model_metadata, value);
+}
+
+OrtStatus *ortSetSessionExecutionMode(OrtApi *api, OrtSessionOptions *options, ExecutionMode execution_mode)
+{
+    return api->SetSessionExecutionMode(options, execution_mode);
+}
+
+OrtStatus *ortGetAvailableProviders(OrtApi *api, char ***out_ptr, int *provider_length)
+{
+    return api->GetAvailableProviders(out_ptr, provider_length);
+}
+
+OrtStatus *ortReleaseAvailableProviders(OrtApi *api, char **ptr, int provider_length)
+{
+    return api->ReleaseAvailableProviders(ptr, provider_length);
+}
 
 OrtStatus *ortSessionOptionsAppendExecutionProvider_ROCM(OrtApi *api, OrtSessionOptions *options, OrtROCMProviderOptions *rocm_options)
 {
@@ -131,6 +201,16 @@ OrtStatus *ortCreateAllocator(OrtApi *api, OrtSession *session, OrtMemoryInfo *m
     return api->CreateAllocator(session, mem_infom, allocator);
 }
 
+OrtStatus *ortIsTensor(OrtApi *api, OrtValue *value, int *out)
+{
+    return api->IsTensor(value, out);
+}
+
+OrtStatus *ortIsSparseTensor(OrtApi *api, OrtValue *value, int *out)
+{
+    return api->IsSparseTensor(value, out);
+}
+
 OrtStatus *ortCreateTensorWithDataAsOrtValue(OrtApi *api, OrtMemoryInfo *info, void *p_data,
                                              size_t p_data_len, const int64_t *shape, size_t shape_len, ONNXTensorElementDataType type,
                                              OrtValue **out)
@@ -208,6 +288,12 @@ OrtStatus *ortCastTypeInfoToSequenceTypeInfo(OrtApi *api, const OrtTypeInfo *typ
                                              const OrtSequenceTypeInfo **out)
 {
     return api->CastTypeInfoToSequenceTypeInfo(type_info, out);
+}
+
+OrtStatus *ortCastTypeInfoToMapTypeInfo(OrtApi *api, const OrtTypeInfo *type_info,
+                                        const OrtMapTypeInfo **out)
+{
+    return api->CastTypeInfoToMapTypeInfo(type_info, out);
 }
 
 OrtStatus *ortGetTensorElementType(OrtApi *api, const OrtTensorTypeAndShapeInfo *tensor,
